@@ -1,24 +1,65 @@
-import './style.css'
-import typescriptLogo from './typescript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.ts'
+import van from 'vanjs-core'
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-`
+import { useTimeLeft } from './useTimeLeft'
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const TIME_LEFT = 10
+
+function App() {
+  const { h1, div, p, button } = van.tags
+
+  // クリック数
+  const count = van.state(0)
+  // 残り時間、アクティブかどうか、スタートとリセットの関数オブジェクト
+  const [timeLeft, isActive, handler] = useTimeLeft(TIME_LEFT)
+
+  // 一秒間にクリックした回数の平均値
+  const clicksPerSecond = van.derive(() => {
+    return timeLeft.val === 0 ? count.val / TIME_LEFT : 0
+  })
+
+  // クリック数と残り時間をリセット
+  const handleReset = () => {
+    count.val = 0
+    handler.reset()
+  }
+
+  return div(
+    { class: 'click-counter' },
+    h1({ class: 'title' }, 'VanJS Click Counter'),
+    p({ class: 'text' }, 'Clicks: ', count),
+    p({ class: 'text' }, 'Time Left: ', timeLeft, ' seconds'),
+    p({ class: 'text' }, 'Average Clicks Per Second: ', () =>
+      timeLeft.val === 0 ? clicksPerSecond.val.toFixed(2) : '',
+    ),
+    div(() =>
+      isActive.val
+        ? // アクティブの時はクリックでカウントを増やせるように
+          button(
+            {
+              class: 'action-button',
+              onclick: () => count.val++,
+            },
+            'Click',
+          )
+        : // アクティブでない時は計測スタートできるように
+          button(
+            {
+              class: 'action-button',
+              onclick: () => handler.start(),
+              disabled: () => timeLeft.val === 0,
+            },
+            'Start',
+          ),
+    ),
+    button(
+      {
+        class: 'reset-button',
+        disabled: isActive,
+        onclick: () => handleReset(),
+      },
+      'Reset',
+    ),
+  )
+}
+
+van.add(document.getElementById('app')!, App())
