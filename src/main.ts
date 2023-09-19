@@ -10,7 +10,7 @@ function App() {
   // クリック数
   const count = van.state(0)
   // 残り時間、アクティブかどうか、スタートとリセットの関数オブジェクト
-  const [timeLeft, isActive, handler] = useTimeLeft(TIME_LEFT)
+  const [timeLeft, isActiveInterval, handler] = useTimeLeft(TIME_LEFT)
 
   // 一秒間にクリックした回数の平均値
   const clicksPerSecond = van.derive(() => {
@@ -32,7 +32,7 @@ function App() {
       timeLeft.val === 0 ? clicksPerSecond.val.toFixed(2) : '',
     ),
     div(() =>
-      isActive.val
+      isActiveInterval.val
         ? // アクティブの時はクリックでカウントを増やせるように
           button(
             {
@@ -54,7 +54,7 @@ function App() {
     button(
       {
         class: 'reset-button',
-        disabled: isActive,
+        disabled: isActiveInterval,
         onclick: () => handleReset(),
       },
       'Reset',
