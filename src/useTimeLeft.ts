@@ -1,4 +1,3 @@
-
 import van from 'vanjs-core'
 
 export const useTimeLeft = (initialNumber: number) => {
